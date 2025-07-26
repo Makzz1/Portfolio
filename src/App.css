@@ -1,0 +1,443 @@
+/* Import Compressa VF Font */
+@font-face {
+  font-family: 'Compressa VF';
+  src: url('https://res.cloudinary.com/dr6lvwubh/raw/upload/v1529908256/CompressaPRO-GX.woff2');
+  font-style: normal;
+}
+
+/* Core Visual System */
+:root {
+  /* Dark Black and Red theme */
+  --color-background: #000000;
+  --bg-white: rgba(255, 255, 255, 0.03);
+  --bg-card: rgba(20, 20, 20, 0.9);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --border-color: rgba(255, 56, 56, 0.2);
+  --border-light: rgba(255, 255, 255, 0.08);
+  --accent-dark-red: #1a0000;
+  
+  /* Sophisticated Button Colors */
+  --accent-primary: #FFFFFF;
+  --accent-hover: #FF3838;
+  --accent-active: #FF2525;
+  --accent-foreground: #000000;
+  
+  /* Functional Colors */
+  --color-success: #FFFFFF;
+  --color-error: #FF3838;
+  --color-warning: #FFB838;
+  --color-disabled: rgba(255, 255, 255, 0.3);
+  
+  /* Grid System */
+  --grid-unit: 47.6px;
+}
+
+/* Typography System with Compressa VF */
+.hero-title { 
+  font-family: 'Compressa VF', ui-monospace, monospace; 
+  font-size: clamp(60px, 15vw, 340px); 
+  font-weight: 600; 
+  color: var(--text-primary); 
+  line-height: 1; 
+  text-transform: uppercase; 
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 20px rgba(255, 56, 56, 0.3);
+}
+
+.header-logo {
+  font-family: 'Compressa VF', ui-monospace, monospace;
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.title-big { 
+  font-family: 'Compressa VF', ui-monospace, monospace; 
+  font-size: clamp(44px, 8vw, 200px); 
+  font-weight: 600; 
+  color: var(--text-primary); 
+  line-height: 1; 
+  text-transform: uppercase;
+  text-shadow: 0 0 15px rgba(255, 56, 56, 0.2);
+}
+
+.text-big { 
+  font-family: 'Compressa VF', ui-monospace, monospace; 
+  font-size: clamp(32px, 6vw, 84px); 
+  font-weight: 500; 
+  color: var(--text-primary); 
+  line-height: 1.07;
+}
+
+.text-regular { 
+  font-family: 'Compressa VF', ui-monospace, monospace; 
+  font-size: clamp(16px, 2.5vw, 30px); 
+  font-weight: 500; 
+  color: var(--text-primary); 
+  line-height: 1.2;
+}
+
+.text-body { 
+  font-family: 'Compressa VF', ui-monospace, monospace; 
+  font-size: clamp(14px, 1.8vw, 18px); 
+  font-weight: 400; 
+  color: var(--text-primary); 
+  line-height: 1.33;
+}
+
+.label { 
+  font-family: 'Compressa VF', ui-monospace, monospace; 
+  font-size: clamp(10px, 1.5vw, 18px); 
+  font-weight: 500; 
+  color: var(--text-primary); 
+  line-height: 1; 
+  text-transform: uppercase; 
+  letter-spacing: 0.05em;
+}
+
+.label-small { 
+  font-family: 'Compressa VF', ui-monospace, monospace; 
+  font-size: clamp(8px, 1.2vw, 12px); 
+  font-weight: 400; 
+  color: var(--text-primary); 
+  line-height: 1.25; 
+  text-transform: uppercase; 
+  letter-spacing: 0.05em;
+}
+
+/* About Me Section Styles */
+.about-section {
+  font-family: 'Compressa VF', ui-monospace, monospace;
+  font-size: clamp(16px, 2.5vw, 24px);
+  font-weight: 400;
+  color: var(--text-primary);
+  line-height: 1.4;
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.about-title {
+  font-family: 'Compressa VF', ui-monospace, monospace;
+  font-size: clamp(24px, 4vw, 48px);
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+  text-shadow: 0 0 15px rgba(255, 56, 56, 0.2);
+}
+
+/* Component Styles */
+.btn-primary {
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 0;
+  padding: 12px 24px;
+  font-family: 'Compressa VF', ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  letter-spacing: 0.05em;
+  backdrop-filter: blur(10px);
+}
+
+.btn-primary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 56, 56, 0.8);
+  box-shadow: 0 0 20px rgba(255, 56, 56, 0.3);
+}
+
+.btn-accent {
+  background: var(--accent-primary);
+  border: 2px solid var(--accent-primary);
+  border-radius: 0;
+  padding: 12px 24px;
+  font-family: 'Compressa VF', ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent-foreground);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  letter-spacing: 0.05em;
+  backdrop-filter: blur(10px);
+}
+
+.btn-accent:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  color: #ffffff;
+  transform: scale(1.02);
+  box-shadow: 0 0 20px rgba(255, 56, 56, 0.4);
+}
+
+.nav-link {
+  color: var(--text-primary);
+  text-decoration: none;
+  font-family: 'Compressa VF', ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 400;
+  text-transform: uppercase;
+  padding: 8px 12px;
+  transition: all 0.15s ease;
+  letter-spacing: 0.05em;
+  display: inline-block;
+}
+
+.nav-link:hover {
+  color: #FF6B6B;
+  text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 0;
+  padding: 24px;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(20px);
+}
+
+.card::before,
+.card::after {
+  display: none !important;
+}
+
+.card > *::before,
+.card > *::after {
+  display: none !important;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(255, 56, 56, 0.15);
+  border-color: rgba(255, 56, 56, 0.3);
+  background: rgba(30, 30, 30, 0.9);
+}
+
+.card-title {
+  font-family: 'Compressa VF', ui-monospace, monospace;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  letter-spacing: 0.05em;
+}
+
+/* Scroll Stack Styles */
+.scroll-stack {
+  position: relative;
+  overflow: visible;
+  padding: 40px 0;
+}
+
+.scroll-stack-item {
+  transition: transform 0.5s ease, opacity 0.5s ease;
+  margin-bottom: 20px;
+  transform-origin: center center;
+}
+
+.scroll-stack-item.stacked {
+  transform: scale(0.95) translateY(-10px);
+  opacity: 0.8;
+}
+
+.scroll-stack-item:nth-child(2) {
+  transform: scale(0.98) translateY(-5px);
+  z-index: 2;
+}
+
+.scroll-stack-item:nth-child(3) {
+  transform: scale(0.96) translateY(-10px);
+  z-index: 1;
+}
+
+.scroll-stack-item:nth-child(4) {
+  transform: scale(0.94) translateY(-15px);
+  z-index: 0;
+}
+
+/* Dark Grid Background */
+.grid-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: transparent;
+  z-index: -1;
+}
+
+.grid-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    linear-gradient(to right, rgba(255, 56, 56, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 56, 56, 0.03) 1px, transparent 1px);
+  background-size: 47.6px 47.6px;
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+/* Layout System */
+.container {
+  width: 100%;
+  max-width: 1920px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.grid-container {
+  display: grid;
+  gap: var(--grid-unit);
+  padding: calc(var(--grid-unit) * 2);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Mobile Responsive */
+@media (max-width: 767px) {
+  .container {
+    padding: 0 16px;
+  }
+  
+  .hero-title {
+    font-size: 60px;
+  }
+  
+  .title-big {
+    font-size: 44px;
+  }
+  
+  .text-big {
+    font-size: 32px;
+    line-height: 36px;
+  }
+  
+  .header-logo {
+    font-size: 20px;
+  }
+  
+  .btn-primary {
+    width: 100%;
+    min-height: 52px;
+  }
+  
+  .btn-accent {
+    min-height: 52px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .container {
+    padding: 0 48px;
+  }
+}
+
+/* Animations and Effects */
+.hover-lift {
+  transition: transform 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+.hover-scale {
+  transition: transform 0.2s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+/* Glowing text effects */
+.glow-text {
+  text-shadow: 0 0 10px rgba(255, 56, 56, 0.5);
+}
+
+/* Header styles */
+.header {
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 56, 56, 0.1);
+}
+
+/* App Reset */
+.App {
+  min-height: 100vh;
+  background: var(--color-background);
+  position: relative;
+  color: var(--text-primary);
+}
+
+/* Portfolio wrapper to ensure proper layering */
+.portfolio-wrapper {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+}
+
+/* Section styling for dark theme */
+.section-dark {
+  background: rgba(10, 0, 0, 0.3);
+  border-top: 1px solid rgba(255, 56, 56, 0.1);
+  border-bottom: 1px solid rgba(255, 56, 56, 0.1);
+  position: relative;
+  z-index: 1;
+}
+
+.section-accent {
+  position: relative;
+  z-index: 1;
+}
+
+.section-accent::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 56, 56, 0.3) 50%, transparent 100%);
+}
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-hover);
+}
