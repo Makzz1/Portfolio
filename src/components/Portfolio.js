@@ -97,10 +97,10 @@ const Portfolio = () => {
               Building exceptional digital experiences through innovative design and clean code
             </p>
             <div className="flex flex-col md:flex-row gap-6 justify-center items-center">
-              <a href="#projects" className="btn-accent hover-scale">
+              <a href="#projects" className="btn-accent hover-scale" onClick={(e) => handleNavClick(e, 'projects')}>
                 VIEW MY WORK
               </a>
-              <a href="#about" className="btn-primary">
+              <a href="#about" className="btn-primary" onClick={(e) => handleNavClick(e, 'about')}>
                 ABOUT ME
               </a>
             </div>
