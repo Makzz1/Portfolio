@@ -1,4 +1,5 @@
 {
+  "homepage": "https://Makzz1.github.io/Portfolio",
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
@@ -62,7 +63,9 @@
   "scripts": {
     "start": "craco start",
     "build": "craco build",
-    "test": "craco test"
+    "test": "craco test",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "browserslist": {
     "production": [
