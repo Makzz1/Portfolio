@@ -15,7 +15,7 @@ export const mockData = {
       title: "Adaptive ECMP in Spine-Leaf Topology",
       category: "Network Engineering",
       description: "Implementation of Adaptive Equal Cost Multi-Path routing in Spine-Leaf network topology for improved load balancing and network performance.",
-      image: "/images/projects/adaptive-ecmp.svg",
+      image: "/Portfolio/images/projects/adaptive-ecmp.svg",
       technologies: ["Python", "Network Programming", "SDN", "Mininet"],
       githubUrl: "https://github.com/Makzz1/Adaptive-ECMP-in-SpineLeaf-Topology.git",
       liveUrl: "#"
@@ -25,7 +25,7 @@ export const mockData = {
       title: "Hotel Order Management System",
       category: "System Development",
       description: "Complete hotel order management system with inventory tracking, order processing, and customer management features for hospitality industry.",
-      image: "/images/projects/hotel-management.svg",
+      image: "/Portfolio/images/projects/hotel-management.svg",
       technologies: ["Python", "Tkinter", "Oracle Database"],
       githubUrl: "https://github.com/Makzz1/Hotel-Order-Management-System.git",
       liveUrl: "#"
@@ -35,7 +35,7 @@ export const mockData = {
       title: "Fake News Detection System",
       category: "Artificial Intelligence",
       description: "AI-powered system for detecting fake news using natural language processing and machine learning techniques. Currently in development phase.",
-      image: "/images/projects/fake-news-detection.svg",
+      image: "/Portfolio/images/projects/fake-news-detection.svg",
       technologies: ["Python", "NLP", "TensorFlow", "Scikit-learn"],
       githubUrl: "https://github.com/Makzz1",
       liveUrl: "#",
@@ -53,7 +53,7 @@ export const mockData = {
       credentialId: "NPTEL-EH-2024-001",
       skills: ["Ethical Hacking", "Penetration Testing", "Cybersecurity", "Network Security"],
       verificationUrl: "#",
-      image: "/images/certificates/nptel-ethical-hacking.jpg"
+      image: "/Portfolio/images/certificates/nptel-ethical-hacking.jpg"
     },
     {
       id: 2,
@@ -64,7 +64,7 @@ export const mockData = {
       credentialId: "NPTEL-JAVA-2024-002",
       skills: ["Java", "OOP", "Data Structures", "Programming"],
       verificationUrl: "#",
-      image: "/images/certificates/nptel-java.jpg"
+      image: "/Portfolio/images/certificates/nptel-java.jpg"
     },
     {
       id: 3,
@@ -75,7 +75,7 @@ export const mockData = {
       credentialId: "GCP-DA-2024-003",
       skills: ["Google Cloud", "Data Analytics", "BigQuery", "Data Processing"],
       verificationUrl: "#",
-      image: "/images/certificates/google-cloud-analytics.jpg"
+      image: "/Portfolio/images/certificates/google-cloud-analytics.jpg"
     }
   ]
 };
