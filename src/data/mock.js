@@ -5,7 +5,7 @@ export const mockData = {
       title: "Hostel Accommodation for Chennai Students",
       category: "Web Development",
       description: "A comprehensive hostel accommodation platform designed specifically for students in Chennai, featuring search, booking, and management functionalities.",
-      image: "/images/projects/hostel-accommodation.svg",
+      image: "/Portfolio/images/projects/hostel-accommodation.svg",
       technologies: ["HTML", "CSS", "JavaScript", "Supabase"],
       githubUrl: "https://github.com/Makzz1/Hostel-Accomadation-for-Chennai-students.git",
       liveUrl: "#"
