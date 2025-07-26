@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import "./App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HashRouter as Router, Routes, Route } from "react-router-dom";
 import axios from "axios";
 import Portfolio from "./components/Portfolio";
 
@@ -27,13 +27,13 @@ const Home = () => {
 function App() {
   return (
     <div className="App">
-      <BrowserRouter>
+      <Router>
         <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
+          <Route >
+            <Route path="/" element={<Home />} />
           </Route>
         </Routes>
-      </BrowserRouter>
+      </Router>
     </div>
   );
 }
