@@ -34,12 +34,11 @@ export const mockData = {
       id: 4,
       title: "Fake News Detection System",
       category: "Artificial Intelligence",
-      description: "AI-powered system for detecting fake news using natural language processing and machine learning techniques. Currently in development phase.",
+      description: "Fine-tuned LLM embeddings using contrastive learning to improve semantic discrimination for fake news classification. Designed an attention-based neural classifier on top of LLM embeddings to improve explainability and classification accuracy.",
       image: "/Portfolio/images/projects/fake-news-detection.svg",
-      technologies: ["Python", "NLP", "TensorFlow", "Scikit-learn"],
+      technologies: ["Python", "LLM", "PyTorch", "Transformers"],
       githubUrl: "https://github.com/Makzz1",
-      liveUrl: "#",
-      status: "ongoing"
+      liveUrl: "#"
     }
   ],
   

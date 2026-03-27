@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Award, Calendar, Briefcase, Phone, Mail, Linkedin } from 'lucide-react';
+import { Award, Calendar, Briefcase, Phone, Mail, Linkedin, Code, Box, Network } from 'lucide-react';
 import { mockData } from '../data/mock';
 import TextPressure from './TextPressure';
 import Dither from './Dither';
@@ -7,8 +7,63 @@ import Dither from './Dither';
 const Portfolio = () => {
   const [activeProject, setActiveProject] = useState(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [leetcodeStats, setLeetcodeStats] = useState(null);
+  const [leetcodeLoading, setLeetcodeLoading] = useState(true);
 
   useEffect(() => {
+    const fetchLeetCode = async () => {
+      try {
+        const res = await fetch('https://alfa-leetcode-api.onrender.com/userProfile/makzz');
+        if (!res.ok) throw new Error('Alfa API failed');
+        const data = await res.json();
+        if (data && data.totalSolved !== undefined) {
+          setLeetcodeStats(data);
+          setLeetcodeLoading(false);
+          return;
+        }
+      } catch (err) {
+        console.warn('Primary LeetCode API failed, trying fallback API...', err);
+      }
+
+      try {
+        const res = await fetch('https://leetcode-stats-api.herokuapp.com/makzz');
+        if (!res.ok) throw new Error('Heroku API failed');
+        const data = await res.json();
+        if (data.status === "success") {
+          setLeetcodeStats({
+            totalSolved: data.totalSolved,
+            totalQuestions: data.totalQuestions,
+            easySolved: data.easySolved,
+            totalEasy: data.totalEasy,
+            mediumSolved: data.mediumSolved,
+            totalMedium: data.totalMedium,
+            hardSolved: data.hardSolved,
+            totalHard: data.totalHard,
+            ranking: data.ranking
+          });
+          setLeetcodeLoading(false);
+          return;
+        }
+      } catch (err) {
+        console.warn('Secondary API failed, using latest known static fallback.', err);
+      }
+
+      // Static Fallback Data in case both public APIs are rate limited
+      setLeetcodeStats({
+        totalSolved: 292,
+        totalQuestions: 3879,
+        easySolved: 122,
+        totalEasy: 933,
+        mediumSolved: 156,
+        totalMedium: 2030,
+        hardSolved: 14,
+        totalHard: 916,
+        ranking: 462428
+      });
+      setLeetcodeLoading(false);
+    };
+
+    fetchLeetCode();
     setIsVisible(true);
   }, []);
 
@@ -162,7 +217,7 @@ const Portfolio = () => {
                     July 2023 – May 2027
                   </div>
                   <div className="text-body mb-4">
-                    <span className="text-red-400 font-medium">CGPA:</span> 8.362/10.00
+                    <span className="text-red-400 font-medium">CGPA:</span> 8.372/10.00
                   </div>
                 </div>
               </div>
@@ -206,56 +261,85 @@ const Portfolio = () => {
             <h2 className="title-big mb-8">SKILLS & TECHNOLOGIES</h2>
           </div>
           
-          <div className="max-w-6xl mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Programming Languages */}
-            <div className="card">
-              <div className="card-title mb-4 text-red-400">PROGRAMMING LANGUAGES</div>
-              <div className="flex flex-wrap gap-2">
-                {['Python', 'SQL', 'HTML', 'CSS', 'JavaScript'].map((skill, index) => (
-                  <span key={index} className="label-small bg-gray-800 border border-gray-600 px-3 py-1">
-                    {skill}
-                  </span>
-                ))}
+          <div className="max-w-6xl mx-auto space-y-16">
+            {[
+              {
+                title: "PROGRAMMING",
+                skills: [
+                  { name: "Python", icon: "https://cdn.simpleicons.org/python/3776AB" },
+                  { name: "Java", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/java/java-original.svg" },
+                  { name: "JavaScript", icon: "https://cdn.simpleicons.org/javascript/F7DF1E" },
+                  { name: "Ruby", icon: "https://cdn.simpleicons.org/ruby/CC342D" },
+                  { name: "SQL", icon: "https://cdn.simpleicons.org/mysql/4479A1" }
+                ]
+              },
+              {
+                title: "BACKEND & FRAMEWORKS",
+                skills: [
+                  { name: "Flask", icon: "https://cdn.simpleicons.org/flask/white" },
+                  { name: "FastAPI", icon: "https://cdn.simpleicons.org/fastapi/009688" },
+                  { name: "Flutter", icon: "https://cdn.simpleicons.org/flutter/02569B" }
+                ]
+              },
+              {
+                title: "DATABASES",
+                skills: [
+                  { name: "MySQL", icon: "https://cdn.simpleicons.org/mysql/4479A1" },
+                  { name: "PostgreSQL", icon: "https://cdn.simpleicons.org/postgresql/4169E1" },
+                  { name: "Elasticsearch", icon: "https://cdn.simpleicons.org/elasticsearch/005571" }
+                ]
+              },
+              {
+                title: "LIBRARIES & TOOLS",
+                skills: [
+                  { name: "Pandas", icon: "https://cdn.simpleicons.org/pandas/150458" },
+                  { name: "NumPy", icon: "https://cdn.simpleicons.org/numpy/013243" },
+                  { name: "SciKit-Learn", icon: "https://cdn.simpleicons.org/scikitlearn/F7931E" },
+                  { name: "PyCharm", icon: "https://cdn.simpleicons.org/pycharm/white" },
+                  { name: "VS Code", icon: "https://cdn.simpleicons.org/visualstudiocode/007ACC" }
+                ]
+              },
+              {
+                title: "CLOUD & DEVOPS",
+                skills: [
+                  { name: "Docker", icon: "https://cdn.simpleicons.org/docker/2496ED" },
+                  { name: "Git", icon: "https://cdn.simpleicons.org/git/F05032" },
+                  { name: "GitHub", icon: "https://cdn.simpleicons.org/github/white" },
+                  { name: "Render", icon: "https://cdn.simpleicons.org/render/46E3B7" },
+                  { name: "Postman", icon: "https://cdn.simpleicons.org/postman/FF6C37" },
+                  { name: "Supabase", icon: "https://cdn.simpleicons.org/supabase/3ECF8E" }
+                ]
+              }
+            ].map((category, idx) => (
+              <div key={idx} className="w-full">
+                <div className="card-title mb-8 text-xl text-red-400 border-b border-gray-700 pb-2 text-center">{category.title}</div>
+                <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 w-full">
+                  {category.skills.map((skill, sIdx) => (
+                    <div key={sIdx} className="flex flex-col items-center justify-center hover:-translate-y-2 hover:scale-110 transition-all duration-300 cursor-pointer group">
+                      <img src={skill.icon} alt={skill.name} className="w-16 h-16 mb-4 filter drop-shadow-md group-hover:drop-shadow-2xl transition-all" />
+                      <span className="text-body font-bold text-gray-300 group-hover:text-white transition-colors tracking-wide">{skill.name}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-            
-            {/* Frameworks & Libraries */}
-            <div className="card">
-              <div className="card-title mb-4 text-red-400">FRAMEWORKS & LIBRARIES</div>
-              <div className="flex flex-wrap gap-2">
-                {['Flask', 'Pandas', 'NumPy', 'Tkinter'].map((skill, index) => (
-                  <span key={index} className="label-small bg-gray-800 border border-gray-600 px-3 py-1">
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </div>
-            
-            {/* Tools & Platforms */}
-            <div className="card">
-              <div className="card-title mb-4 text-red-400">TOOLS & PLATFORMS</div>
-              <div className="flex flex-wrap gap-2">
-                {['PyCharm', 'VS Code', 'Supabase', 'Render', 'GitHub', 'Docker', 'WSL', 'Mininet'].map((skill, index) => (
-                  <span key={index} className="label-small bg-gray-800 border border-gray-600 px-3 py-1">
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </div>
-            
-            {/* Networking & SDN */}
-            <div className="card">
-              <div className="card-title mb-4 text-red-400">NETWORKING & SDN</div>
-              <div className="text-body text-secondary">
-                Built custom ECMP load balancer using Ryu and OpenFlow for advanced network management.
-              </div>
-            </div>
-            
-            {/* Machine Learning */}
-            <div className="card">
-              <div className="card-title mb-4 text-red-400">MACHINE LEARNING</div>
-              <div className="text-body text-secondary">
-                Exploring LLM + GNN hybrids for fake news detection and advanced AI applications.
+            ))}
+
+            {/* Concepts */}
+            <div className="w-full">
+              <div className="card-title mb-8 text-xl text-red-400 border-b border-gray-700 pb-2 text-center">CONCEPTS</div>
+              <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 w-full opacity-90">
+                <div className="flex flex-col items-center justify-center hover:-translate-y-2 hover:scale-110 transition-all duration-300 cursor-pointer group">
+                  <Code className="w-16 h-16 mb-4 text-blue-400 filter drop-shadow-md group-hover:drop-shadow-2xl transition-all" />
+                  <span className="text-body font-bold text-gray-300 group-hover:text-white transition-colors text-center tracking-wide">Data Structures &amp; Algorithms</span>
+                </div>
+                <div className="flex flex-col items-center justify-center hover:-translate-y-2 hover:scale-110 transition-all duration-300 cursor-pointer group">
+                  <Box className="w-16 h-16 mb-4 text-purple-400 filter drop-shadow-md group-hover:drop-shadow-2xl transition-all" />
+                  <span className="text-body font-bold text-gray-300 group-hover:text-white transition-colors text-center tracking-wide">Microservices Fundamentals</span>
+                </div>
+                <div className="flex flex-col items-center justify-center hover:-translate-y-2 hover:scale-110 transition-all duration-300 cursor-pointer group">
+                  <Network className="w-16 h-16 mb-4 text-green-400 filter drop-shadow-md group-hover:drop-shadow-2xl transition-all" />
+                  <span className="text-body font-bold text-gray-300 group-hover:text-white transition-colors text-center tracking-wide">Distributed Systems Basics</span>
+                </div>
               </div>
             </div>
           </div>
@@ -268,45 +352,47 @@ const Portfolio = () => {
             </div>
             
             <div className="card">
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-body text-secondary">Total Solved:</span>
-                  <span className="text-regular text-accent-primary">128/3626</span>
+              {leetcodeLoading ? (
+                <div className="flex justify-center flex-col items-center py-8">
+                  <div className="w-8 h-8 border-4 border-gray-600 border-t-accent-primary rounded-full animate-spin mb-4"></div>
+                  <div className="text-secondary text-body">Loading real-time stats...</div>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-body text-secondary">Easy:</span>
-                  <span className="text-regular text-green-400">75/886</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-body text-secondary">Medium:</span>
-                  <span className="text-regular text-yellow-400">53/1885</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-body text-secondary">Hard:</span>
-                  <span className="text-regular text-red-500">0/855</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-body text-secondary">Rank:</span>
-                  <span className="text-regular text-accent-primary">1,016,062</span>
-                </div>
-                <div className="pt-2 border-t border-gray-600">
-                  <div className="text-body text-secondary mb-2">Primary Languages:</div>
-                  <div className="flex flex-wrap gap-2">
-                    <span className="label-small bg-blue-900 border border-blue-600 px-2 py-1">Python3 (85)</span>
-                    <span className="label-small bg-orange-900 border border-orange-600 px-2 py-1">MySQL (39)</span>
+              ) : leetcodeStats ? (
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-body text-secondary">Total Solved:</span>
+                    <span className="text-regular text-accent-primary">{leetcodeStats.totalSolved}/{leetcodeStats.totalQuestions}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-body text-secondary">Easy:</span>
+                    <span className="text-regular text-green-400">{leetcodeStats.easySolved}/{leetcodeStats.totalEasy}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-body text-secondary">Medium:</span>
+                    <span className="text-regular text-yellow-400">{leetcodeStats.mediumSolved}/{leetcodeStats.totalMedium}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-body text-secondary">Hard:</span>
+                    <span className="text-regular text-red-500">{leetcodeStats.hardSolved}/{leetcodeStats.totalHard}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-body text-secondary">Rank:</span>
+                    <span className="text-regular text-accent-primary">{leetcodeStats.ranking?.toLocaleString() || 'N/A'}</span>
+                  </div>
+                  <div className="pt-2 border-t border-gray-600 mt-4">
+                    <a 
+                      href="https://leetcode.com/u/makzz/" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-body text-accent-primary hover:text-accent-hover transition-colors inline-block mt-2"
+                    >
+                      View Profile →
+                    </a>
                   </div>
                 </div>
-                <div className="pt-2">
-                  <a 
-                    href="https://leetcode.com/u/makzz/" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-body text-accent-primary hover:text-accent-hover transition-colors"
-                  >
-                    View Profile →
-                  </a>
-                </div>
-              </div>
+              ) : (
+                <div className="text-center text-red-400 py-4">Failed to load statistics.</div>
+              )}
             </div>
           </div>
         </div>
