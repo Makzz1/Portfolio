@@ -465,6 +465,7 @@ export default function Home() {
           <a className="font-label-caps text-label-caps hover:opacity-50 transition-opacity cursor-pointer" onClick={(e) => handleNavClick(e, '#heroSection')}>Index</a>
           <a className="font-label-caps text-label-caps hover:opacity-50 transition-opacity cursor-pointer" onClick={(e) => handleNavClick(e, '#about-content', 'center center')}>About</a>
           <a className="font-label-caps text-label-caps hover:opacity-50 transition-opacity cursor-pointer" onClick={(e) => handleNavClick(e, '#portalSection')}>Experience</a>
+          <a className="font-label-caps text-label-caps hover:opacity-50 transition-opacity cursor-pointer" onClick={(e) => handleNavClick(e, '#projectsSection')}>Projects</a>
           <a className="font-label-caps text-label-caps hover:opacity-50 transition-opacity cursor-pointer" onClick={(e) => handleNavClick(e, '#contact-wrapper')}>Contact</a>
         </div>
 
