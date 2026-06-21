@@ -698,8 +698,8 @@ export default function Home() {
                   <a href="https://makzz1.github.io/Portfolio/" target="_blank" rel="noreferrer" className="hover:italic hover:opacity-50 transition-all origin-left">Portfolio</a>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <a href="mailto:maghizhvanban@gmail.com" className="font-code-md text-lg md:text-[1vw] text-[#111] hover:opacity-50 transition-opacity">
-                    maghizhvanban@gmail.com
+                  <a href="mailto:connectwithme@makzz.dev" className="font-code-md text-lg md:text-[1vw] text-[#111] hover:opacity-50 transition-opacity">
+                    connectwithme@makzz.dev
                   </a>
                   <a href="tel:+919486307067" className="font-code-md text-lg md:text-[1vw] text-[#111] hover:opacity-50 transition-opacity">
                     +91 94863 07067

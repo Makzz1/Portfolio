@@ -24,35 +24,42 @@ function noise2D(x, z) {
  * ─────────────────────────────────────────── */
 function ParticleTerrain({ smoothProgress }) {
   const pointsRef = useRef()
-  // Wider and deeper grid — extends 8 units FORWARD (+Z) so terrain
-  // is visible immediately at camera start (z=5), and 200 units back.
+
+  // Restoring the original dense grid (45,600 particles)
+  // Since we removed the heavy JavaScript useFrame loop, 
+  // 45k static particles will render flawlessly without any CPU lag!
   const gridWidth = 120
-  const gridDepth = 380          // many more rows = never see the end
+  const gridDepth = 380          
   const spacing = 0.55
-  const FORWARD_ROWS = 15        // rows in the +Z (in front of start)
+  const FORWARD_ROWS = 15
   const count = gridWidth * gridDepth
 
-  const [baseXZ, sizes] = useMemo(() => {
-    // Store only X and Z base coords; Y is computed per-frame from noise
-    const xz = new Float32Array(count * 2)
+  const [positions, sizes] = useMemo(() => {
+    const pos = new Float32Array(count * 3)
     const siz = new Float32Array(count)
     for (let iz = 0; iz < gridDepth; iz++) {
       for (let ix = 0; ix < gridWidth; ix++) {
         const idx = iz * gridWidth + ix
+        
         const x = (ix - gridWidth / 2) * spacing
-        // iz=0 starts at +FORWARD_ROWS*spacing ahead of camera start
         const z = (FORWARD_ROWS - iz) * spacing
-        xz[idx * 2] = x
-        xz[idx * 2 + 1] = z
+        
+        // Static massive mountains - calculate noise ONLY ONCE
+        const n1 = noise2D(x * 0.08, z * 0.04) * 6.0
+        const n2 = noise2D(x * 0.2,  z * 0.1)  * 2.0
+        const n3 = noise2D(x * 0.015, z * 0.015) * 16.0
+        
+        pos[idx * 3]     = x
+        pos[idx * 3 + 1] = n1 + n2 + n3 - 2.5
+        pos[idx * 3 + 2] = z
+        
+        // Original dynamic sizing to make mountains look natural
         const centerDist = Math.abs(ix - gridWidth / 2) / (gridWidth / 2)
         siz[idx] = (0.8 + (1 - centerDist) * 0.6) * (0.6 + Math.random() * 0.4)
       }
     }
-    return [xz, siz]
+    return [pos, siz]
   }, [])
-
-  // Allocate position buffer once
-  const posArray = useMemo(() => new Float32Array(count * 3), [])
 
   const dotTexture = useMemo(() => {
     const canvas = document.createElement('canvas')
@@ -60,41 +67,12 @@ function ParticleTerrain({ smoothProgress }) {
     const ctx = canvas.getContext('2d')
     const g = ctx.createRadialGradient(16, 16, 0, 16, 16, 16)
     g.addColorStop(0, 'rgba(255,255,255,1)')
-    g.addColorStop(0.5, 'rgba(255,255,255,0.4)')
+    g.addColorStop(0.5, 'rgba(255,255,255,0.6)') // Brighter center
     g.addColorStop(1, 'rgba(255,255,255,0)')
     ctx.fillStyle = g
     ctx.fillRect(0, 0, 32, 32)
     return new THREE.CanvasTexture(canvas)
   }, [])
-
-  useFrame(() => {
-    if (!pointsRef.current) return
-    const posAttr = pointsRef.current.geometry.attributes.position
-    const p = smoothProgress.current
-    // Scroll offset: shift terrain rows backward as camera moves forward.
-    // The camera travels ~130 units; we offset the noise sample to give
-    // the illusion of endless terrain without moving actual geometry.
-    const scrollZ = p * 130   // matches camera total depth
-
-    for (let iz = 0; iz < gridDepth; iz++) {
-      for (let ix = 0; ix < gridWidth; ix++) {
-        const idx = iz * gridWidth + ix
-        const x = baseXZ[idx * 2]
-        const z = baseXZ[idx * 2 + 1]
-        // Sample noise with scrollZ offset so the terrain pattern scrolls
-        const sz = z - scrollZ
-        const wave = Math.sin(x * 0.3 + p * 8) * 0.5 + Math.sin(sz * 0.2 - p * 5) * 0.3
-        const n1 = noise2D(x * 0.08, sz * 0.04) * 6.0
-        const n2 = noise2D(x * 0.2,  sz * 0.1)  * 2.0
-        const n3 = noise2D(x * 0.015, sz * 0.015) * 16.0
-        posArray[idx * 3]     = x
-        posArray[idx * 3 + 1] = n1 + n2 + n3 - 2.5 + wave
-        posArray[idx * 3 + 2] = z   // keep geometry fixed; noise does the moving
-      }
-    }
-    posAttr.array.set(posArray)
-    posAttr.needsUpdate = true
-  })
 
   return (
     <points ref={pointsRef}>
@@ -102,7 +80,7 @@ function ParticleTerrain({ smoothProgress }) {
         <bufferAttribute
           attach="attributes-position"
           count={count}
-          array={posArray}
+          array={positions}
           itemSize={3}
         />
         <bufferAttribute
@@ -114,11 +92,11 @@ function ParticleTerrain({ smoothProgress }) {
       </bufferGeometry>
       <pointsMaterial
         map={dotTexture}
-        color="#6a9fd8"
-        size={0.12}
+        color="#8bbdf2"   // Brighter, more electric blue
+        size={0.16}       // Slightly larger particles for better visibility
         sizeAttenuation
         transparent
-        opacity={0.7}
+        opacity={0.85}    // Higher opacity to combat the fog
         depthWrite={false}
         blending={THREE.AdditiveBlending}
       />
@@ -133,16 +111,14 @@ function SkyParticles() {
   const pointsRef = useRef()
   const count = 3000
 
-  const [positions, randoms] = useMemo(() => {
+  const [positions] = useMemo(() => {
     const pos = new Float32Array(count * 3)
-    const rands = new Float32Array(count)
     for (let i = 0; i < count; i++) {
       pos[i * 3] = (Math.random() - 0.5) * 100
       pos[i * 3 + 1] = Math.random() * 20 - 2
       pos[i * 3 + 2] = -Math.random() * 150
-      rands[i] = Math.random()
     }
-    return [pos, rands]
+    return [pos]
   }, [])
 
   const dotTexture = useMemo(() => {
@@ -161,13 +137,10 @@ function SkyParticles() {
   useFrame((state) => {
     if (!pointsRef.current) return
     const time = state.clock.elapsedTime
-    const geo = pointsRef.current.geometry
-    const posAttr = geo.attributes.position
-    for (let i = 0; i < count; i++) {
-      posAttr.array[i * 3 + 1] += Math.sin(time * 0.5 + randoms[i] * 10) * 0.003
-      posAttr.array[i * 3] += Math.cos(time * 0.3 + randoms[i] * 10) * 0.003
-    }
-    posAttr.needsUpdate = true
+    // Transform the whole group rather than looping 3000 vertices per frame. ZERO CPU load!
+    pointsRef.current.position.y = Math.sin(time * 0.5) * 1.5
+    pointsRef.current.position.x = Math.cos(time * 0.3) * 1.5
+    pointsRef.current.rotation.z = Math.sin(time * 0.1) * 0.02
   })
 
   return (
