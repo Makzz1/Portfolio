@@ -687,7 +687,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="max-w-7xl mx-auto w-full pt-32 pb-0" id="about-content">
+          <div className="max-w-7xl mx-auto w-full pt-32 pb-[200px]" id="about-content">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
               <div className="md:col-span-3">
                 <div className="md:sticky top-32">
