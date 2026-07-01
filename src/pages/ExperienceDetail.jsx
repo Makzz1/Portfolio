@@ -70,7 +70,7 @@ export default function ExperienceDetail() {
       duration: 0.6,
       ease: 'power2.inOut',
       onComplete: () => {
-        navigate('/')
+        navigate('/', { state: { skipLoader: true, scrollTo: 'experienceContent' } })
       }
     })
   }

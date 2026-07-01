@@ -110,10 +110,9 @@ export function TextGlitch({ text, hoverText, href, className = "", delay = 0, o
     <h1
       ref={textRef}
       className={`
-        text-[10vw] font-bold leading-none tracking-tight m-0 
+        text-[10vw] font-normal leading-none tracking-tight m-0 
         text-white/20
         bg-gradient-to-r from-white to-neutral-300 bg-clip-text bg-no-repeat
-        border-b border-white/20
         flex flex-col items-start justify-center relative
         transition-all duration-500 ease-out
         cursor-pointer
@@ -138,7 +137,7 @@ export function TextGlitch({ text, hoverText, href, className = "", delay = 0, o
         ref={spanRef}
         className="
           absolute w-full h-full 
-          text-black font-bold
+          text-black font-normal
           flex flex-col justify-center
           transition-all duration-400 ease-out
           pointer-events-none

@@ -4,7 +4,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useProgress } from '@react-three/drei'
 import ProjectsSection from '../components/ProjectsSection'
 import { TextGlitch } from '../components/TextGlitch'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 gsap.registerPlugin(ScrollTrigger)
 // Force GPU-composited layers for ALL GSAP animations site-wide
 gsap.config({ force3D: true })
@@ -27,17 +27,37 @@ function preloadImage(src) {
 
 export default function Home() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const skipLoader = location.state?.skipLoader
+
   const [timeStr, setTimeStr] = useState('')
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const topNavRef = useRef(null)
   const appRef = useRef(null)
+  const [showBackToTop, setShowBackToTop] = useState(false)
   const { progress, total } = useProgress()
   // null = still loading | true = fully loaded
-  const [isLoaded, setIsLoaded] = useState(false)
+  const [isLoaded, setIsLoaded] = useState(skipLoader || false)
   const [loadPct, setLoadPct] = useState(0)   // 0-100 visual progress
   const loadDoneRef = useRef(false)
 
+  // ─── Back to top logic ──────────────────────────────────────────────
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > window.innerHeight * 0.5)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   // ─── Master preloader ───────────────────────────────────────────────
   useEffect(() => {
+    if (skipLoader) {
+      setLoadPct(100)
+      loadDoneRef.current = true
+      return
+    }
+
     const MIN_MS = 1800   // always show the logo for at least 1.8 s
     const startTime = Date.now()
 
@@ -82,31 +102,82 @@ export default function Home() {
   }, [progress, total, loadPct])
 
   // ─── Reveal sequence on load complete ───────────────────────────────
+  // Hard scroll-lock: force scroll position to 0 until loaded
+  useEffect(() => {
+    if (isLoaded) return
+    const lockScroll = () => window.scrollTo(0, 0)
+    window.addEventListener('scroll', lockScroll, { passive: false })
+    // Also block wheel/touch events from moving the page
+    const preventWheel = (e) => e.preventDefault()
+    window.addEventListener('wheel', preventWheel, { passive: false })
+    window.addEventListener('touchmove', preventWheel, { passive: false })
+    return () => {
+      window.removeEventListener('scroll', lockScroll)
+      window.removeEventListener('wheel', preventWheel)
+      window.removeEventListener('touchmove', preventWheel)
+    }
+  }, [isLoaded])
+
   useEffect(() => {
     if (!isLoaded) {
       document.body.style.overflow = 'hidden'
       window.scrollTo(0, 0)
     } else {
-      // Beautiful staged reveal: very slow 4.8s fade (3x slower)
-      gsap.to('#centerLogo', {
-        filter: 'blur(0px)', opacity: 1,
-        duration: 4.8, ease: 'power2.inOut',
-        onComplete: () => {
-          document.body.style.overflow = 'auto'
-          ScrollTrigger.sort()
-          ScrollTrigger.refresh()
+      if (skipLoader) {
+        // Fast-forward GSAP states
+        gsap.set('#centerLogo', { filter: 'blur(0px)', opacity: 1 })
+        gsap.set('#heroTagline', { opacity: 1, y: 0 })
+        gsap.set('#loadingDots', { opacity: 0 })
+        
+        // Hide body temporarily to prevent layout flash while jumping
+        gsap.set(document.body, { opacity: 0 })
+        document.body.style.overflow = 'auto'
+        
+        ScrollTrigger.sort()
+        ScrollTrigger.refresh()
+        
+        if (location.state?.scrollTo) {
+          setTimeout(() => {
+            const el = document.getElementById(location.state.scrollTo)
+            if (el) {
+              el.scrollIntoView({ behavior: 'instant', block: 'start' })
+              window.history.replaceState({}, '')
+            }
+            // Restore visibility after layout and jump
+            gsap.set(document.body, { opacity: 1 })
+          }, 50)
+        } else {
+          gsap.set(document.body, { opacity: 1 })
         }
-      })
+      } else {
+        // Beautiful staged reveal: very slow 4.8s fade (3x slower)
+        gsap.to('#centerLogo', {
+          filter: 'blur(0px)', opacity: 1,
+          duration: 4.8, ease: 'power2.inOut',
+          onComplete: () => {
+            document.body.style.overflow = 'auto'
+            ScrollTrigger.sort()
+            ScrollTrigger.refresh()
+          }
+        })
 
-      // Smoothly fade out the dots
-      gsap.to('#loadingDots', {
-        opacity: 0,
-        duration: 4.8,
-        ease: 'power2.inOut'
-      })
+        // Fade in the hero tagline after the logo resolves
+        gsap.to('#heroTagline', {
+          opacity: 1, y: 0,
+          duration: 2.0, ease: 'power3.out',
+          delay: 2.4,
+        })
+
+        // Smoothly fade out the dots
+        gsap.to('#loadingDots', {
+          opacity: 0,
+          duration: 4.8,
+          ease: 'power2.inOut'
+        })
+      }
     }
     return () => { document.body.style.overflow = 'auto' }
-  }, [isLoaded])
+  }, [isLoaded, skipLoader, location.state])
 
   useEffect(() => {
     const updateTime = () => {
@@ -188,14 +259,14 @@ export default function Home() {
         gsap.to(parallaxInner, {
           xPercent: -100,
           opacity: 0,
-          ease: 'none',         // linear movement feels more direct with scroll
+          ease: 'none',
           force3D: true,
           scrollTrigger: {
             trigger: parallaxWrapper,
             start: 'center center',
             end: '+=100%',
             pin: true,
-            scrub: true,        // instant sync with scroll to prevent lagging sensation
+            scrub: true,
             anticipatePin: 1,
           }
         })
@@ -204,7 +275,8 @@ export default function Home() {
       // 5. About Section Pin & Sequential Reveal
       const aboutContent = document.getElementById('about-content')
       const aboutPoint2 = document.getElementById('about-point-2')
-      if (aboutContent && aboutPoint2) {
+      const aboutGrid = aboutContent?.querySelector('.grid')
+      if (aboutContent && aboutPoint2 && aboutGrid) {
         // Initially hide the second point
         gsap.set(aboutPoint2, { opacity: 0, y: 30 })
 
@@ -212,14 +284,20 @@ export default function Home() {
           scrollTrigger: {
             trigger: aboutContent,
             start: 'center center',
-            end: '+=150vh', // Increase scroll time (approx 1.5 times screen height)
+            end: '+=150vh',
             pin: true,
-            scrub: 1,
+            scrub: 2.5,       // Higher scrub = smoother deceleration into/out of the pin
             anticipatePin: 1,
           }
         })
 
-        // Fade in point 2 much slower (3x duration)
+        // Phase 1: Settle-in drift (masks pin-start on forward, pin-release on reverse)
+        aboutTl.fromTo(aboutGrid,
+          { y: 20, opacity: 0.85 },
+          { y: 0, opacity: 1, duration: 1, ease: 'power2.out' }
+        )
+
+        // Phase 2: Fade in point 2
         aboutTl.to(aboutPoint2, {
           opacity: 1,
           y: 0,
@@ -227,11 +305,13 @@ export default function Home() {
           ease: 'power2.inOut'
         })
         
-        // Pause at the end to allow reading before the pin releases
+        // Phase 3: Hold for reading
         aboutTl.to({}, { duration: 1 })
-        
-        // Removed the artificial fade-out so the section scrolls up naturally, 
-        // eliminating the empty space after the pin.
+
+        // Phase 4: Settle-out drift (masks pin-release on forward, pin-start on reverse)
+        aboutTl.to(aboutGrid,
+          { y: -20, opacity: 0.85, duration: 1, ease: 'power2.in' }
+        )
       }
 
       // 6. Portal Zoom (Black Text scaling to fill screen)
@@ -246,7 +326,7 @@ export default function Home() {
             start: 'top top',
             end: '+=4000',
             pin: true,
-            scrub: true,          // true keeps it directly bound to scroll
+            scrub: true,
             anticipatePin: 1,
             onUpdate: (self) => {
               if (self.progress > 0.8 && topNav) {
@@ -296,7 +376,8 @@ export default function Home() {
             start: 'top top',
             end: '+=100%',
             pin: true,
-            scrub: 1,
+            scrub: 2.5,
+            anticipatePin: 1,  // Smooth entry AND exit
             onUpdate: (self) => {
               if (self.progress > 0.1 && topNav) {
                 topNav.classList.remove('dark-mode')
@@ -307,21 +388,27 @@ export default function Home() {
           }
         })
 
-        // Expand the white circle
+        // Phase 1: Small settle-in (masks pin-start on forward, pin-release on reverse)
+        contactTl.fromTo(contactReveal,
+          { clipPath: 'circle(0% at 50% 50%)' },
+          { clipPath: 'circle(0% at 50% 50%)', duration: 0.3 }  // brief hold at start
+        )
+
+        // Phase 2: Expand the white circle
         contactTl.to(contactReveal, {
           clipPath: 'circle(150% at 50% 50%)',
           duration: 2,
           ease: 'power2.inOut'
         })
         
-        // Fly in the huge heading from the right
+        // Phase 3: Fly in the huge heading from the right
         contactTl.to(contactHeading, {
           opacity: 1,
           x: 0,
           rotation: 0,
           duration: 1.5,
           ease: 'power3.out'
-        }, 0.5)
+        }, 0.8)
         
         // Apply scroll parallax to the other items as you scroll down
         contactItems.forEach((item, i) => {
@@ -460,7 +547,7 @@ export default function Home() {
           <div className="font-bold uppercase tracking-widest text-body-md font-label-caps cursor-pointer" onClick={(e) => handleNavClick(e, '#heroSection')}>MAKZ™</div>
         </div>
         
-        {/* Center Links */}
+        {/* Center Links — desktop */}
         <div className="hidden md:flex flex-1 justify-center items-center gap-8">
           <a className="font-label-caps text-label-caps hover:opacity-50 transition-opacity cursor-pointer" onClick={(e) => handleNavClick(e, '#heroSection')}>Index</a>
           <a className="font-label-caps text-label-caps hover:opacity-50 transition-opacity cursor-pointer" onClick={(e) => handleNavClick(e, '#about-content', 'center center')}>About</a>
@@ -469,11 +556,58 @@ export default function Home() {
           <a className="font-label-caps text-label-caps hover:opacity-50 transition-opacity cursor-pointer" onClick={(e) => handleNavClick(e, '#contact-wrapper')}>Contact</a>
         </div>
 
-        {/* Right Side */}
-        <div className="flex-1 flex justify-end font-label-caps text-label-caps live-time">
-          {timeStr}
+        {/* Right Side — time on desktop, hamburger on mobile */}
+        <div className="flex-1 flex justify-end items-center gap-4">
+          <div className="hidden md:block font-label-caps text-label-caps live-time">
+            {timeStr}
+          </div>
+          {/* Hamburger — mobile only */}
+          <button
+            className="md:hidden flex flex-col justify-center items-center w-8 h-8 gap-[5px] relative z-[1100]"
+            onClick={() => setMobileMenuOpen(prev => !prev)}
+            aria-label="Toggle menu"
+          >
+            <span className={`block w-5 h-[1.5px] bg-current transition-all duration-300 origin-center ${mobileMenuOpen ? 'rotate-45 translate-y-[6.5px]' : ''}`} />
+            <span className={`block w-5 h-[1.5px] bg-current transition-all duration-300 ${mobileMenuOpen ? 'opacity-0 scale-0' : ''}`} />
+            <span className={`block w-5 h-[1.5px] bg-current transition-all duration-300 origin-center ${mobileMenuOpen ? '-rotate-45 -translate-y-[6.5px]' : ''}`} />
+          </button>
         </div>
       </nav>
+
+      {/* Mobile Menu Overlay */}
+      <div
+        className={`fixed inset-0 z-[1050] bg-white flex flex-col items-center justify-center gap-10 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] md:hidden ${
+          mobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+        style={{ transform: mobileMenuOpen ? 'translateY(0)' : 'translateY(-20px)' }}
+      >
+        <button 
+          onClick={() => setMobileMenuOpen(false)}
+          className="absolute top-6 left-6 p-2 font-label-caps tracking-widest text-sm text-black flex items-center hover:opacity-50 transition-opacity"
+        >
+          [ ← BACK ]
+        </button>
+
+        {[
+          { label: 'Index', target: '#heroSection' },
+          { label: 'About', target: '#about-content', start: 'center center' },
+          { label: 'Experience', target: '#portalSection' },
+          { label: 'Projects', target: '#projectsSection' },
+          { label: 'Contact', target: '#contact-wrapper' },
+        ].map((item) => (
+          <a
+            key={item.label}
+            className="font-headline-xl text-4xl tracking-tight text-primary cursor-pointer hover:opacity-50 transition-opacity"
+            onClick={(e) => {
+              setMobileMenuOpen(false)
+              setTimeout(() => handleNavClick(e, item.target, item.start), 400)
+            }}
+          >
+            {item.label}
+          </a>
+        ))}
+        <div className="mt-8 font-label-caps text-label-caps opacity-40">{timeStr}</div>
+      </div>
 
       {/* Global Scroll Tracker (Vertical Line Slider) */}
       <div id="scroll-tracker" className="fixed top-0 right-4 md:right-12 h-screen w-8 z-50 pointer-events-none opacity-0 hidden md:flex flex-col items-center justify-center mix-blend-difference">
@@ -507,8 +641,18 @@ export default function Home() {
               </h1>
             </div>
 
+            {/* Personal tagline — fades in after logo reveal */}
+            <p
+              id="heroTagline"
+              className="font-body-md text-body-md text-on-surface-variant mt-6 max-w-md text-center leading-relaxed tracking-wide"
+              style={{ opacity: 0, transform: 'translateY(12px)' }}
+            >
+              A backend engineer — grew up using these apps,<br />
+              now I build them. And I know what actually matters.
+            </p>
+
             {/* Subtle loading pulse dots — fades out smoothly */}
-            <div id="loadingDots" className="absolute -bottom-16 left-1/2 -translate-x-1/2 flex gap-2 justify-center items-center">
+            <div id="loadingDots" className="absolute -bottom-24 left-1/2 -translate-x-1/2 flex gap-2 justify-center items-center">
               {[0,1,2].map(i => (
                 <div
                   key={i}
@@ -523,12 +667,12 @@ export default function Home() {
         </section>
 
         {/* About Section */}
-        <section className="relative z-20 bg-white px-margin-mobile md:px-margin-desktop py-32 flex flex-col" id="aboutSection">
+        <section className="relative z-20 bg-white px-margin-mobile md:px-margin-desktop pt-32 pb-0 flex flex-col" id="aboutSection">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-40 overflow-hidden">
             <div className="md:col-start-2 max-w-2xl" id="intro-paragraph">
               <div className="mb-6 text-primary font-label-caps text-label-caps opacity-50">(01) MISSION</div>
-              <p className="font-headline-lg text-primary leading-[1.1] font-normal text-[2.25rem]">
-                Engineering visual and digital systems that merge technical precision with aesthetic storytelling. Specializing in high-performance backend architecture and data-driven research.
+              <p className="font-headline-lg text-primary leading-[1.2] font-normal text-2xl md:text-[2.25rem]">
+                I don't build software that just functions — I build software that solves real problems. The moment it genuinely helps someone is when I celebrate, not when it passes tests.
               </p>
             </div>
           </div>
@@ -543,7 +687,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="max-w-7xl mx-auto w-full pt-32 pb-32" id="about-content">
+          <div className="max-w-7xl mx-auto w-full pt-32 pb-0" id="about-content">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
               <div className="md:col-span-3">
                 <div className="md:sticky top-32">
@@ -553,15 +697,15 @@ export default function Home() {
               </div>
               <div className="md:col-span-8 md:col-start-5 flex flex-col gap-24">
                 <div className="reveal-element" id="about-point-1">
-                  <h3 className="font-label-caps text-label-caps mb-6 opacity-50">01 / INTRODUCTION</h3>
-                  <p className="font-headline-lg text-3xl leading-snug text-primary mb-8 font-normal">
-                    Final-year Software Engineering undergraduate at SSN Chennai, specializing in high-performance backend architecture. Versatile, adaptive, and focused on building resilient digital infrastructure.
+                  <h3 className="font-label-caps text-label-caps mb-6 opacity-50">01 / WHO I AM</h3>
+                  <p className="font-headline-lg text-2xl md:text-3xl leading-snug text-primary mb-8 font-normal">
+                    A backend software kid from Chennai. Final year at SSN. Interned at WoowLocal as their Flutter developer, trained at ISRO IPRC where I worked on a network log parsing system. I write code that ships to places that can't afford it to break.
                   </p>
                 </div>
                 <div className="reveal-element" id="about-point-2">
-                  <h3 className="font-label-caps text-label-caps mb-6 opacity-50">02 / ARCHITECTURE</h3>
-                  <p className="font-body-md text-xl leading-relaxed text-on-surface-variant max-w-2xl">
-                    Focusing on Distributed Systems and microservices architecture. I believe in &quot;Industrial Logic&quot;—clean, efficient, and unvarnished code that prioritizes performance and structural honesty.
+                  <h3 className="font-label-caps text-label-caps mb-6 opacity-50">02 / WHAT I BELIEVE</h3>
+                  <p className="font-body-md text-lg md:text-xl leading-relaxed text-on-surface-variant max-w-2xl">
+                    Don't settle for bare enough. I celebrate when the software solves the real problem — not when it's merely functional. Distributed systems, microservices, backend architecture — these are my tools. But the goal is always the same: build something that genuinely matters.
                   </p>
                 </div>
               </div>
@@ -595,10 +739,9 @@ export default function Home() {
               {/* Top Left: Title */}
               <div className="w-full flex justify-start items-start">
                 <div className="w-full md:w-1/2">
-                  <h1 className="font-headline-xl text-3xl md:text-5xl tracking-tighter text-white">
+                  <h1 className="font-headline-xl text-3xl md:text-5xl tracking-tighter text-white mb-6">
                     EXPERIENCE
                   </h1>
-                  <div className="h-[1px] w-full max-w-xs bg-white/20 mt-6 mb-6"></div>
                   <p className="font-code-md text-[10px] text-white/40 uppercase tracking-widest leading-relaxed max-w-xs">
                     SELECT A LOG ENTRY TO INITIATE FULL DIAGNOSTIC REVIEW OF THE SYSTEM ARCHITECTURE AND OPERATIONAL METRICS.
                   </p>
@@ -664,11 +807,11 @@ export default function Home() {
           <div id="contact-circle-reveal" className="w-full bg-[#f4f4f4] text-black relative pt-[10vh] md:pt-[15vh] pb-[10vh] px-[5vw]">
             
             {/* Top Row */}
-            <div className="flex flex-col md:flex-row justify-between items-start w-full relative z-10 mb-[15vh] md:mb-[25vh] gap-8 md:gap-0">
+            <div className="flex flex-col md:flex-row justify-between items-start w-full relative z-10 mb-[10vh] md:mb-[25vh] gap-8 md:gap-0">
               
               {/* Left: Contact Heading */}
               <div className="contact-heading w-full md:w-5/12">
-                <h2 className="font-headline-xl text-[25vw] md:text-[18vw] leading-[0.75] tracking-tighter font-black uppercase text-[#111]">
+                <h2 className="font-headline-xl text-[16vw] md:text-[18vw] leading-[0.8] tracking-tighter font-black uppercase text-[#111]">
                   Contact
                 </h2>
               </div>
@@ -681,7 +824,7 @@ export default function Home() {
               </div>
 
               {/* Far Right: Image */}
-              <div className="contact-item hidden md:block w-3/12 aspect-[3/4] md:mt-[12vw] bg-neutral-300 overflow-hidden shadow-2xl relative transform-gpu">
+              <div className="contact-item w-3/5 ml-auto md:w-3/12 aspect-[3/4] mt-10 md:mt-[12vw] bg-neutral-300 overflow-hidden shadow-2xl relative transform-gpu">
                  <div className="w-full h-full bg-[url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070')] bg-cover bg-center grayscale opacity-90 scale-105 hover:scale-100 transition-transform duration-700 transform-gpu"></div>
                  <div className="absolute top-4 left-4 text-white text-sm font-code-md">+</div>
                  <div className="absolute bottom-4 right-4 text-white text-sm font-code-md">+</div>
@@ -689,14 +832,14 @@ export default function Home() {
             </div>
 
             {/* Bottom Row */}
-            <div className="flex flex-col md:flex-row justify-between items-end w-full relative z-10 gap-16 md:gap-0">
+            <div className="flex flex-col md:flex-row justify-between items-end w-full relative z-10 gap-12 md:gap-0">
               
               {/* Far Left: Links */}
-              <div className="contact-item w-full md:w-3/12 flex flex-col gap-10">
-                <div className="flex flex-col gap-1 font-headline-lg text-3xl md:text-[2.5vw] leading-none font-bold tracking-tight text-[#111]">
+              <div className="contact-item w-full md:w-3/12 flex flex-col gap-10 mb-8 md:mb-0 order-2 md:order-1">
+                <div className="flex flex-col gap-1 font-headline-lg text-2xl md:text-[2.5vw] leading-none font-bold tracking-tight text-[#111]">
                   <a href="https://github.com/Makzz1" target="_blank" rel="noreferrer" className="hover:italic hover:opacity-50 transition-all origin-left">GitHub</a>
-                  <a href="https://linkedin.com/in/maghizh1" target="_blank" rel="noreferrer" className="hover:italic hover:opacity-50 transition-all origin-left">LinkedIn</a>
-                  <a href="https://makzz1.github.io/Portfolio/" target="_blank" rel="noreferrer" className="hover:italic hover:opacity-50 transition-all origin-left">Portfolio</a>
+                  <a href="https://www.linkedin.com/in/maghizh1/" target="_blank" rel="noreferrer" className="hover:italic hover:opacity-50 transition-all origin-left">LinkedIn</a>
+                  <a href="https://makzz.dev" target="_blank" rel="noreferrer" className="hover:italic hover:opacity-50 transition-all origin-left">makzz.dev</a>
                 </div>
                 <div className="flex flex-col gap-2">
                   <a href="mailto:connectwithme@makzz.dev" className="font-code-md text-lg md:text-[1vw] text-[#111] hover:opacity-50 transition-opacity">
@@ -709,14 +852,14 @@ export default function Home() {
               </div>
 
               {/* Center: Image */}
-              <div className="contact-item hidden md:block w-4/12 aspect-video bg-neutral-300 overflow-hidden shadow-2xl relative md:-ml-[5vw]">
+              <div className="contact-item w-2/3 mr-auto md:w-4/12 aspect-video bg-neutral-300 overflow-hidden shadow-2xl relative md:-ml-[5vw] mb-8 md:mb-0 order-3 md:order-2">
                  <div className="w-full h-full bg-[url('https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070')] bg-cover bg-center mix-blend-luminosity opacity-90 scale-105 hover:scale-100 transition-transform duration-700"></div>
                  <div className="absolute top-4 left-4 text-white text-sm font-code-md">+</div>
                  <div className="absolute bottom-4 right-4 text-white text-sm font-code-md">+</div>
               </div>
 
               {/* Far Right: Text */}
-              <div className="contact-item w-full md:w-3/12 md:mb-[15vh]">
+              <div className="contact-item w-full md:w-3/12 mb-10 md:mb-[15vh] order-1 md:order-3">
                 <p className="font-headline-lg text-xl md:text-[1.25vw] leading-snug text-[#111]">
                   I'm available for <span className="italic">full-time opportunities</span> worldwide, on your ambitious projects and <span className="italic">backend engineering</span> collaborations.
                 </p>
@@ -733,9 +876,8 @@ export default function Home() {
             ARCH: X86-64 | PROTOCOL: HTTPS | © {new Date().getFullYear()} MAKZ™
           </div>
           <div className="flex gap-12">
-            <a className="font-code-md text-sm hover:text-accent-green transition-colors" href="#">GITHUB</a>
-            <a className="font-code-md text-sm hover:text-accent-green transition-colors" href="#">LINKEDIN</a>
-            <a className="font-code-md text-sm hover:text-accent-green transition-colors" href="#">RESUME</a>
+            <a className="font-code-md text-sm hover:text-accent-green transition-colors" href="https://github.com/Makzz1" target="_blank" rel="noreferrer">GITHUB</a>
+            <a className="font-code-md text-sm hover:text-accent-green transition-colors" href="https://www.linkedin.com/in/maghizh1/" target="_blank" rel="noreferrer">LINKEDIN</a>
           </div>
         </footer>
       </div>

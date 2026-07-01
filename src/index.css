@@ -138,13 +138,14 @@
   }
 
   .project-description {
-      font-family: 'Special Elite', cursive;
-      font-size: clamp(0.9rem, 1.1vw, 1.1rem);
-      line-height: 1.75;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(0.95rem, 1.15vw, 1.15rem);
+      line-height: 1.7;
       color: rgba(255, 255, 255, 0.65);
       max-width: 560px;
       margin-top: 4px;
       min-height: 5.5em;  /* Reserve space so layout doesn't shift */
+      letter-spacing: 0.01em;
   }
 
   .project-tags-row {
